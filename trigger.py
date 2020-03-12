@@ -1,20 +1,52 @@
+# Libraries
 import RPi.GPIO as GPIO
 import time
-import requests
-import datetime
 
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+# GPIO Mode (BOARD / BCM)
+GPIO.setmode(GPIO.BCM)
 
-event_url = 'http://www.panda-cuddles.ch/api/Event'
-session_url = 'http://www.panda-cuddles.ch/api/Session'
+# set GPIO Pins
+GPIO_TRIGGER = 18
+GPIO_ECHO = 24
 
-button_pressed_before = False
+# set GPIO direction (IN / OUT)
+GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
+GPIO.setup(GPIO_ECHO, GPIO.IN)
+
+
+def get_distance():
+    # set Trigger to HIGH
+    GPIO.output(GPIO_TRIGGER, True)
+
+    # set Trigger after 0.01ms to LOW
+    time.sleep(0.00001)
+    GPIO.output(GPIO_TRIGGER, False)
+
+    StartTime = time.time()
+    StopTime = time.time()
+
+    # save StartTime
+    while GPIO.input(GPIO_ECHO) == 0:
+        StartTime = time.time()
+
+    # save time of arrival
+    while GPIO.input(GPIO_ECHO) == 1:
+        StopTime = time.time()
+
+    # time difference between start and arrival
+    TimeElapsed = StopTime - StartTime
+    # multiply with the sonic speed (34300 cm/s)
+    # and divide by 2, because there and back
+    distance = (TimeElapsed * 34300) / 2
+
+    return distance
+
 button_pressed = False
+button_pressed_before = False
 
 while True:
-    if GPIO.input(10) == GPIO.HIGH:
+    distance = get_distance()
+    if distance <= 1:
         print("++ button was pressed")
         button_pressed = True
     else:

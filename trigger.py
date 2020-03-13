@@ -13,6 +13,8 @@ GPIO_ECHO = 11
 GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
 GPIO.setup(GPIO_ECHO, GPIO.IN)
 
+event_url = 'www.panda-cuddles.ch/api/Event'
+
 
 def get_distance():
     # set Trigger to HIGH
